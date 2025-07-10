@@ -1,0 +1,13 @@
+# 🧠 Debug info
+print(f"🔍 ROOT PATH: {ROOT_DIR}")
+print(f"🧠 PYTHON PATH: {sys.path}")
+print(f"🔎 utils/ exists? {os.path.exists(ROOT_DIR / 'utils' / 'loader.py')}")
+print(f"📂 utils/ contents: {os.listdir(ROOT_DIR / 'utils')}")
+
+
+# Optional fallback method (use only if standard import fails)
+# import importlib.util
+# loader_spec = importlib.util.spec_from_file_location("loader", str(ROOT_DIR / "utils" / "loader.py"))
+# loader = importlib.util.module_from_spec(loader_spec)
+# loader_spec.loader.exec_module(loader)
+# resume_data = loader.load_resumes_from_folder("data/resumes")
