@@ -1,0 +1,16 @@
+# Core LangChain + Embeddings
+langchain
+chromadb
+sentence-transformers
+huggingface-hub
+
+# LLMs: Groq (OpenAI-compatible)
+openai
+python-dotenv
+
+# Optional: PDF parsing, API
+unstructured
+pdfminer.six
+fastapi
+uvicorn
+loguru

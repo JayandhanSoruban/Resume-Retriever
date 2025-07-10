@@ -1,0 +1,9 @@
+[ Resumes ] --> [ Embedder ] --> [ Chroma Vector DB ]
+                                      ↑
+                            [ Semantic Search ]
+                                      ↑
+[ Query: "Need psychologist with 5+ years experience" ]
+                                      ↓
+                    [ Top K Resumes → LLM Reranker ]
+                                      ↓
+                       [ Most Relevant Resume Returned ]
