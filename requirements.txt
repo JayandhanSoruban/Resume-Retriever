@@ -3,6 +3,7 @@ langchain
 chromadb
 sentence-transformers
 huggingface-hub
+langchain-community groq
 
 # LLMs: Groq (OpenAI-compatible)
 openai
