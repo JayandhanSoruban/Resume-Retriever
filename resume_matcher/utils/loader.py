@@ -2,7 +2,7 @@
 from pathlib import Path
 import fitz
 
-folder_path= "D:\AGENTIC  AI\Resume Retrieval\data\resumes"
+folder_path= "D:\AGENTIC  AI\Resume Retrieval\resume_matcher\data\Resumes"
 
 def load_resumes_from_folder(folder_path: str):
     resumes = []

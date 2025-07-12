@@ -10,3 +10,6 @@ def add_documents_to_store(docs: list[dict], store):
     documents = [Document(page_content=doc["content"], metadata=doc["metadata"]) for doc in docs]
     store.add_documents(documents)
     store.persist()
+
+
+
