@@ -1,6 +1,6 @@
 from langchain_community.vectorstores import Chroma
 from langchain.schema import Document
-from resume_matcher.services.embedder import get_embedder
+from services.embedder import get_embedder
 
 def load_vectorstore(persist_directory=r"D:\AGENTIC  AI\Resume Retrieval\resume_matcher\vector_store"):
     embedding = get_embedder()

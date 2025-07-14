@@ -135,3 +135,7 @@ def rerank_resumes(query: str, docs: List[Document]) -> str:
     except Exception as e:
         print("[ERROR] LLM call failed:", e)
         return "❗ Failed to rerank resumes due to LLM error."
+
+
+
+# content[:300], "...")

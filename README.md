@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 Once dependencies are installed, run the following script to:
 
-* Load resume files (PDF or TXT) from `data/resumes`
+* Load resume files (PDF or TXT) from `data/Resumes`
 * Convert them into LangChain-compatible documents
 * Generate embeddings using a transformer model
 * Store those embeddings in a persistent local vector store
@@ -42,7 +42,7 @@ Once dependencies are installed, run the following script to:
 #### 🔹 Command:
 
 ```bash
-python resume_matcher/scripts/embed_resumes.py
+python resume_matcher/services/embed_resumes.py
 ```
 
 Make sure your resume files are placed in the following folder structure:
@@ -50,14 +50,32 @@ Make sure your resume files are placed in the following folder structure:
 ```
 resume_matcher/
 ├── data/
-│   └── resumes/
+│   └── Resumes/
 │       ├── resume1.pdf
 │       ├── resume2.txt
 │       └── ...
 ```
 
-> ✅ This step will create a persistent vector store under the `data/vectorstore/` folder.
+> ✅ This step will create a persistent vector store under the `resume_matcher/vectorstore/` folder.
 
 ---
 
 Let me know if you also want to include instructions for running a search, deleting the vector store, or preventing duplicates.
+
+
+### ✅ Step 4: Reset Vector Store (Optional – Use With Caution)
+If you're planning to update the vector store with new or modified resumes, it's important to first delete the existing embeddings to prevent duplicates or inconsistencies.
+
+🔹 Command:
+bash
+
+python resume_matcher/vector_store/reset_vector_store.py
+
+⚠️ Caution: This will permanently delete all existing embeddings in the resume_matcher/vectorstore/ directory.
+✅ Run this only when you're adding or updating resumes.
+❌ Do not run this if you're only performing a search, as it will remove all existing vector data.
+
+After resetting, re-run Step 3 to embed the updated resumes.
+
+
+

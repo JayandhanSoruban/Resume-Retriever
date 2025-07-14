@@ -1,70 +1,63 @@
-# reranker_llm.py
+import sys
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+from langchain_community.vectorstores import Chroma
+from langchain_core.documents import Document
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_groq import ChatGroq
-from typing import List
-from langchain_core.documents import Document
-import os
-from dotenv import load_dotenv
+from services.embedder import get_embedder
 
+# -------------------------
+# ✅ Setup Paths & Environment
+# -------------------------
+ROOT_DIR = Path(__file__).resolve().parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+print("✅ sys.path root set to:", ROOT_DIR)
+
+load_dotenv(dotenv_path=ROOT_DIR / ".env")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+MODEL_NAME = os.getenv("GROQ_MODEL", "llama3-70b-8192")  # Default fallback
+
+if not GROQ_API_KEY:
+    raise EnvironmentError("❌ GROQ_API_KEY not found in .env file")
+
+VECTOR_STORE_DIR = ROOT_DIR / "resume_matcher/vector_store"
+
+# -------------------------
+# ✅ Initialize LLM
+# -------------------------
 def initialize_llm():
-    """Initialize the Groq LLM with error handling."""
-    env_path = "D:/AGENTIC AI/Resume Retrieval/.env"
-    
-    # Check if .env file exists
-    if not os.path.exists(env_path):
-        print(f"[ERROR] .env file not found at: {env_path}")
-        api_key = input("🔑 Please enter your GROQ_API_KEY: ").strip()
-        if not api_key:
-            print("[ERROR] No API key provided. Exiting.")
-            raise ValueError("No API key provided")
-        os.environ["GROQ_API_KEY"] = api_key
-    else:
-        load_dotenv(dotenv_path=env_path)
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            print(f"[ERROR] GROQ_API_KEY not found in {env_path}.")
-            api_key = input("🔑 Please enter your GROQ_API_KEY: ").strip()
-            if not api_key:
-                print("[ERROR] No API key provided. Exiting.")
-                raise ValueError("No API key provided")
-            os.environ["GROQ_API_KEY"] = api_key
-
-    # Debug
-    print("[DEBUG] GROQ_API_KEY =", api_key)
-    print("[DEBUG] GROQ_API_KEY length =", len(api_key))
-
-    # Initialize LLM
     try:
         llm = ChatGroq(
             temperature=0.1,
-            model_name="llama3-70b-8192",
-            groq_api_key=api_key
+            model_name=MODEL_NAME,
+            groq_api_key=GROQ_API_KEY
         )
-        print("[DEBUG] LLM initialized successfully")
+        print(f"[✅] LLM '{MODEL_NAME}' initialized successfully")
         return llm
     except Exception as e:
         print("[ERROR] Failed to initialize LLM:", str(e))
         raise
 
-def rerank_resumes(query: str, docs: List[Document]) -> str:
-    """Rerank resumes using Groq LLM and return the best match."""
+# -------------------------
+# ✅ Rerank Resumes with LLM
+# -------------------------
+def rerank_resumes(query: str, docs: list[Document]) -> str:
     if not docs:
-        print("[ERROR] No documents provided to rerank.")
-        return "❗ No resumes to rerank."
+        return "❗ No resumes found for the query."
 
-    # Build resume string
     resumes_str = "\n\n".join([
-        f"Resume {i+1}:\n{doc.page_content.strip()}" 
-        for i, doc in enumerate(docs) 
+        f"Resume {i+1}:\n{doc.page_content.strip()}"
+        for i, doc in enumerate(docs)
         if doc.page_content and doc.page_content.strip()
     ])
 
     if not resumes_str:
-        print("[ERROR] All documents are empty or invalid.")
         return "❗ All resumes were empty."
 
-    # Prompt template
     prompt_template = PromptTemplate(
         input_variables=["query", "resumes"],
         template="""
@@ -80,24 +73,36 @@ Return the **full content** of the best matching resume ONLY — no explanation,
 """
     )
 
-    # Initialize LLM
     llm = initialize_llm()
-
-    # Chain: prompt -> LLM
     chain: Runnable = prompt_template | llm
-
-    print("\n[DEBUG] Prompt being sent to LLM:\n")
-    print(prompt_template.format(query=query, resumes=resumes_str[:1000]), "...\n")  # partial print
 
     try:
         result = chain.invoke({"query": query, "resumes": resumes_str})
-        if hasattr(result, "content"):
-            return result.content.strip()
-        elif isinstance(result, str):
-            return result.strip()
-        else:
-            print("[WARN] Unexpected LLM response format:", type(result))
-            return str(result)
+        return result.content.strip() if hasattr(result, "content") else str(result).strip()
     except Exception as e:
-        print("[ERROR] LLM call failed:", str(e))
-        return "❗ Failed to rerank resumes due to LLM error."
+        return f"❗ LLM Error: {str(e)}"
+
+# -------------------------
+# ✅ Retrieve & Rerank
+# -------------------------
+def retrieve_and_rerank(query: str, top_k: int = 5):
+    embedder = get_embedder()
+    vectorstore = Chroma(
+        embedding_function=embedder,
+        persist_directory=str(VECTOR_STORE_DIR)
+    )
+    print(f"[INFO] Searching top {top_k} resumes for query: {query}")
+    docs = vectorstore.similarity_search(query, k=top_k)
+    best_match = rerank_resumes(query, docs)
+    print("\n🎯 Best Matching Resume:\n")
+    print(best_match)
+
+# -------------------------
+# ✅ Entry Point
+# -------------------------
+if __name__ == "__main__":
+    user_query = input("💼 Enter job description or query: ").strip()
+    if user_query:
+        retrieve_and_rerank(user_query)
+    else:
+        print("❗ Query cannot be empty.")
