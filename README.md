@@ -77,5 +77,23 @@ python resume_matcher/vector_store/reset_vector_store.py
 
 After resetting, re-run Step 3 to embed the updated resumes.
 
+### ✅ Step 5: Run Semantic Search + LLM Reranking
+Use this script to:
+
+Search the top matching resumes based on semantic similarity
+
+Rerank them using LLM to return the best match
+
+🔹 Command:
+
+bash
+Copy
+Edit
+python semantic_search.py
+🧠 You'll be prompted to enter the job description.
+
+🎯 The LLM will evaluate and return the single best matching resume.
+
+
 
 
